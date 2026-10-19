@@ -5,15 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Week 4 - 悄悄話留言板</title>
   
-  <!-- 引入可愛風格像素字體 (VT323 / DotGothic16 / Press Start 2P / Noto Sans TC) -->
+  <!-- 引入像素字體 (Press Start 2P / DotGothic16 / VT323 / Noto Sans TC) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&family=VT323&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
 
   <style>
-    /* ==========================================================================
-       【頁面與 CodePen 背景水印】
-       ========================================================================== */
+    /* 引入底部 CodePen 水印背景 */
     html {
       height: 100%;
       background: 50% 50% no-repeat
@@ -35,7 +33,7 @@
       --text-light: #ffffff;       /* 白色文字 */
       
       /* 動態焦點設定 */
-      --carousel-duration: 3000ms;  /* 輪播間隔時間（毫秒） */
+      --carousel-duration: 3000ms;  /* 輪播間隔時間 */
     }
 
     * {
@@ -54,7 +52,7 @@
       overflow-x: hidden;
     }
 
-    /* 頂部導覽列：回首頁按鈕 */
+    /* 頂部固定導覽列 / 回首頁按鈕 */
     .nav-bar {
       max-width: 900px;
       margin: 15px auto 0;
@@ -70,3 +68,404 @@
       background-color: var(--mario-red);
       color: #fff;
       text-decoration: none;
+      font-family: 'Press Start 2P', 'DotGothic16', cursive;
+      font-size: 12px;
+      padding: 10px 16px;
+      border: 3px solid #000;
+      box-shadow: 4px 4px 0 #000;
+      border-radius: 4px;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+
+    .home-btn:hover {
+      background-color: #ff3b30;
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0 #000;
+    }
+
+    .home-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0 #000;
+    }
+
+    /* 頂部標題區：馬力歐教室黑板風格 */
+    .header-banner {
+      background-color: var(--chalkboard-green);
+      border: 8px solid #8b5a2b; /* 木質邊框感 */
+      border-radius: 16px;
+      max-width: 900px;
+      margin: 15px auto 20px;
+      padding: 20px;
+      text-align: center;
+      color: var(--text-light);
+      box-shadow: 0 10px 0 rgba(0,0,0,0.2), inset 0 0 20px rgba(0,0,0,0.5);
+      position: relative;
+    }
+
+    .header-banner h1 {
+      font-size: 2rem;
+      letter-spacing: 2px;
+      text-shadow: 3px 3px 0px var(--mario-red);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .header-banner p {
+      margin-top: 8px;
+      font-size: 1.1rem;
+      color: var(--coin-yellow);
+    }
+
+    /* 酷炫問號磚塊圖示 */
+    .block-icon {
+      display: inline-block;
+      width: 36px;
+      height: 36px;
+      background-color: var(--coin-yellow);
+      border: 4px solid #000;
+      border-radius: 6px;
+      color: #000;
+      font-weight: bold;
+      font-size: 24px;
+      line-height: 28px;
+      box-shadow: inset -3px -3px 0px #c68800;
+    }
+
+    /* 容器設定 */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* ==========================================================================
+       【讀取中動畫區 (Loading Animation)】
+       ========================================================================== */
+    #loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 0;
+      color: var(--text-light);
+    }
+
+    .mario-box-loader {
+      width: 60px;
+      height: 60px;
+      background-color: var(--coin-yellow);
+      border: 5px solid #000;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      font-weight: bold;
+      box-shadow: 0 8px 0 #000;
+      animation: jump 0.6s infinite alternate ease-in-out;
+    }
+
+    @keyframes jump {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-25px); }
+    }
+
+    .loading-text {
+      margin-top: 20px;
+      font-size: 1.4rem;
+      text-shadow: 2px 2px 0 #000;
+      letter-spacing: 2px;
+    }
+
+    /* ==========================================================================
+       【瀑布流排版區 (Masonry Layout)】
+       ========================================================================== */
+    .masonry-wall {
+      column-count: 4;
+      column-gap: 20px;
+      margin-top: 20px;
+    }
+
+    @media (max-width: 1100px) { .masonry-wall { column-count: 3; } }
+    @media (max-width: 768px)  { .masonry-wall { column-count: 2; } }
+    @media (max-width: 480px)  { .masonry-wall { column-count: 1; } }
+
+    /* ==========================================================================
+       【留言卡片樣式與動態焦點特效】
+       ========================================================================== */
+    .message-card {
+      break-inside: avoid;
+      margin-bottom: 20px;
+      background-color: #fff8e7;
+      border: 4px solid var(--brick-brown);
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 6px 0 rgba(0, 0, 0, 0.2);
+      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      cursor: pointer;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px dashed #d3c4a5;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+    }
+
+    .author-name {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--mario-red);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .author-name::before {
+      content: '★';
+      color: var(--coin-yellow);
+      -webkit-text-stroke: 1px #000;
+    }
+
+    .timestamp {
+      font-size: 0.8rem;
+      color: #888;
+    }
+
+    .message-body {
+      font-size: 1rem;
+      line-height: 1.6;
+      color: var(--text-dark);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* 被選中的亮起卡片 */
+    .message-card.highlight {
+      transform: scale(1.08);
+      border-color: var(--coin-yellow);
+      background-color: #ffffff;
+      box-shadow: 0 0 25px var(--coin-yellow), 0 10px 20px rgba(0,0,0,0.3);
+      z-index: 10;
+    }
+
+    /* 未被選中的卡片 */
+    .masonry-wall.has-active .message-card:not(.highlight) {
+      opacity: 0.45;
+      filter: blur(1px);
+      transform: scale(0.96);
+    }
+
+    /* 底部裝飾草地條 */
+    .footer-ground {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 16px;
+      background: repeating-linear-gradient(
+        90deg,
+        var(--ground-green),
+        var(--ground-green) 20px,
+        #008800 20px,
+        #008800 40px
+      );
+      border-top: 4px solid #000;
+      z-index: 100;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 返回主選單按鈕 -->
+  <div class="nav-bar">
+    <a href="../index.html" class="home-btn">◀ HOME</a>
+  </div>
+
+  <!-- 頂部標題黑板區 -->
+  <header class="header-banner">
+    <h1>
+      <span class="block-icon">?</span>
+      Week 4 - 悄悄話留言板
+      <span class="block-icon">?</span>
+    </h1>
+    <p>歡迎來到教室留言牆！看大家留了什麼秘密～</p>
+  </header>
+
+  <main class="container">
+    <!-- 讀取中動畫 -->
+    <div id="loading">
+      <div class="mario-box-loader">?</div>
+      <div class="loading-text">讀取留言中...</div>
+    </div>
+
+    <!-- 留言卡片瀑布流牆面 -->
+    <div id="wall" class="masonry-wall"></div>
+  </main>
+
+  <!-- 底部綠色草地裝飾條 -->
+  <div class="footer-ground"></div>
+
+  <script>
+    // 1. 設定 Google 試算表 CSV 網址
+    const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTKM5DusYg7WthneaY2gpdEwUhZSaRU2st4R3WdkbQAhUJ9Vt6CzkscbMFCYp0-m_Fp2EKJvuGOnQdx/pub?output=csv';
+
+    // 2. 輪播時間控制（預設 3000ms = 3 秒）
+    const CAROUSEL_INTERVAL = 3000; 
+
+    let cardsData = [];
+    let currentIndex = 0;
+    let carouselTimer = null;
+
+    const loadingEl = document.getElementById('loading');
+    const wallEl = document.getElementById('wall');
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchMessages();
+    });
+
+    async function fetchMessages() {
+      try {
+        const response = await fetch(CSV_URL);
+        if (!response.ok) throw new Error('網路回應不成功');
+        
+        const csvText = await response.text();
+        cardsData = parseCSV(csvText);
+
+        loadingEl.style.display = 'none';
+
+        if (cardsData.length > 0) {
+          renderCards(cardsData);
+          startCarousel();
+        } else {
+          wallEl.innerHTML = '<p style="text-align:center; color:#fff; font-size:1.2rem;">目前還沒有留言喔！</p>';
+        }
+      } catch (error) {
+        console.error('讀取 CSV 失敗:', error);
+        loadingEl.innerHTML = `<div class="loading-text" style="color:var(--mario-red);">載入失敗，請稍後再試！</div>`;
+      }
+    }
+
+    function parseCSV(text) {
+      const lines = text.trim().split(/\r\n|\n/);
+      const result = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        if (!lines[i].trim()) continue;
+
+        const row = [];
+        let insideQuote = false;
+        let entry = '';
+
+        for (let char of lines[i]) {
+          if (char === '"') {
+            insideQuote = !insideQuote;
+          } else if (char === ',' && !insideQuote) {
+            row.push(entry.trim());
+            entry = '';
+          } else {
+            entry += char;
+          }
+        }
+        row.push(entry.trim());
+
+        const cleanRow = row.map(val => val.replace(/^"|"$/g, '').replace(/""/g, '"'));
+
+        if (cleanRow.length >= 2) {
+          result.push({
+            timestamp: cleanRow[0] || '',
+            name: cleanRow[1] || '匿名朋友',
+            message: cleanRow[2] || '（這張卡片沒有留言內容）'
+          });
+        }
+      }
+      return result;
+    }
+
+    function renderCards(data) {
+      wallEl.innerHTML = '';
+
+      data.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'message-card';
+        card.dataset.index = index;
+
+        let formattedTime = item.timestamp;
+        try {
+          const date = new Date(item.timestamp);
+          if (!isNaN(date)) {
+            formattedTime = `${date.getMonth() + 1}/${date.getDate()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+          }
+        } catch (e) {
+          formattedTime = item.timestamp;
+        }
+
+        card.innerHTML = `
+          <div class="card-header">
+            <span class="author-name">${escapeHTML(item.name)}</span>
+            <span class="timestamp">${escapeHTML(formattedTime)}</span>
+          </div>
+          <div class="message-body">${escapeHTML(item.message)}</div>
+        `;
+
+        card.addEventListener('click', () => {
+          highlightCard(index);
+          resetCarouselTimer();
+        });
+
+        wallEl.appendChild(card);
+      });
+    }
+
+    function highlightCard(index) {
+      const allCards = document.querySelectorAll('.message-card');
+      if (allCards.length === 0) return;
+
+      wallEl.classList.add('has-active');
+
+      allCards.forEach((card, i) => {
+        if (i === index) {
+          card.classList.add('highlight');
+          card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+          card.classList.remove('highlight');
+        }
+      });
+
+      currentIndex = index;
+    }
+
+    function startCarousel() {
+      highlightCard(0);
+
+      carouselTimer = setInterval(() => {
+        currentIndex = (currentIndex + 1) % cardsData.length;
+        highlightCard(currentIndex);
+      }, CAROUSEL_INTERVAL);
+    }
+
+    function resetCarouselTimer() {
+      if (carouselTimer) clearInterval(carouselTimer);
+      carouselTimer = setInterval(() => {
+        currentIndex = (currentIndex + 1) % cardsData.length;
+        highlightCard(currentIndex);
+      }, CAROUSEL_INTERVAL);
+    }
+
+    function escapeHTML(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+</html>
