@@ -5,13 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Week 4 - 悄悄話留言板</title>
   
-  <!-- 引入像素字體 (Press Start 2P / DotGothic16 / VT323 / Noto Sans TC) -->
+  <!-- 引入可愛風格像素字體 (VT323 / DotGothic16 / Press Start 2P / Noto Sans TC) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&family=VT323&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
 
   <style>
-    /* 引入底部 CodePen 水印背景 */
+    /* ==========================================================================
+       【頁面與 CodePen 背景水印】
+       ========================================================================== */
     html {
       height: 100%;
       background: 50% 50% no-repeat
@@ -33,7 +35,7 @@
       --text-light: #ffffff;       /* 白色文字 */
       
       /* 動態焦點設定 */
-      --carousel-duration: 3000ms;  /* 輪播間隔時間 */
+      --carousel-duration: 3000ms;  /* 輪播間隔時間（毫秒） */
     }
 
     * {
@@ -52,7 +54,7 @@
       overflow-x: hidden;
     }
 
-    /* 頂部固定導覽列 / 回首頁按鈕 */
+    /* 頂部導覽列：回首頁按鈕 */
     .nav-bar {
       max-width: 900px;
       margin: 15px auto 0;
@@ -68,7 +70,3 @@
       background-color: var(--mario-red);
       color: #fff;
       text-decoration: none;
-      font-family: 'Press Start 2P', 'DotGothic16', cursive;
-      font-size: 12px;
-      padding: 10px 16px;
-      border: 3
