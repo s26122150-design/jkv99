@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>個人數位名片 - 26122150林栩安</title>
+    <!-- 引入Google字體（韓系清新字體） -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* 基礎設定 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        /* 全域背景：清新馬卡龍粉藍/淡紫色漸層背景，並讓內容完美置中 */
+        body {
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* 名片主體：韓系奶油白卡片 + 柔和圓角與陰影 */
+        .profile-card {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 350px; /* 限制最大寬度，呈現精緻小巧感 */
+            padding: 40px 30px;
+            border-radius: 24px; /* 超大圓角，非常有韓系感 */
+            text-align: center; /* 文字置中 */
+            /* 多層柔和陰影 */
+            box-shadow: 0 10px 30px rgba(142, 197, 252, 0.3),
+                        0 4px 10px rgba(0, 0, 0, 0.03);
+            transition: transform 0.3s ease;
+        }
+
+        /* 滑鼠懸停在卡片上一點點浮起效果 */
+        .profile-card:hover {
+            transform: translateY(-5px);
+        }
+
+        /* 圓形大頭貼照片 */
+        .avatar {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%; /* 設為 50% 變完美圓形 */
+            object-fit: cover; /* 確保圖片不變形 */
+            margin-bottom: 20px;
+            /* 給大頭貼一圈微微的外框 */
+            border: 4px solid #fffdf9;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        /* 名字風格 */
+        .name {
+            font-size: 1.5rem;
+            color: #4a4a4a; /* 用深灰色代替純黑色，視覺更溫柔 */
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        /* 簡介風格 */
+        .bio {
+            font-size: 0.9rem;
+            color: #8c8c8c;
+            line-height: 1.5;
+            margin-bottom: 28px;
+        }
+
+        /* 按鈕區塊設定 */
+        .button-group {
+            display: flex;
+            flex-direction: column; /* 讓按鈕上下排列 */
+            gap: 12px; /* 按鈕之間的間距 */
+        }
+
+        /* 按鈕共通基礎樣式 */
+        .btn {
+            display: block;
+            padding: 12px 20px;
+            border-radius: 50px; /* 膠囊形狀按鈕 */
+            text-decoration: none; /* 去除超連結底線 */
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 馬卡龍黃色按鈕 (Instagram) */
+        .btn-instagram {
+            background-color: #fff1b8; /* 馬卡龍柔黃 */
+            color: #614700;
+        }
+
+        .btn-instagram:hover {
+            background-color: #ffe58f;
+            box-shadow: 0 6px 15px rgba(255, 229, 143, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* 馬卡龍粉色按鈕 (Email) */
+        .btn-email {
+            background-color: #ffd6e7; /* 馬卡龍柔粉 */
+            color: #78063a;
+        }
+
+        .btn-email:hover {
+            background-color: #ffadd2;
+            box-shadow: 0 6px 15px rgba(255, 173, 210, 0.5);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 名片主體卡片 -->
+    <div class="profile-card">
+        
+        <!-- 1. 圓形大頭貼 -->
+        <img class="avatar" src="https://i.postimg.cc/k4YVZSWc/zhao-pian.webp" alt="26122150林栩安的大頭貼">
+        
+        <!-- 2. 名字與簡介 -->
+        <h1 class="name">26122150林栩安</h1>
+        <p class="bio">✨哈摟~</p>
+        
+        <!-- 3. 社群與聯絡按鈕 -->
+        <div class="button-group">
+            <a href="https://www.instagram.com" target="_blank" class="btn btn-instagram">Instagram</a>
+            <a href="mailto:your-email@example.com" class="btn btn-email">Send Email</a>
+        </div>
+
+    </div>
+
+</body>
+</html>
