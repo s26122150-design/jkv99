@@ -10,9 +10,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
 
-  <!-- 符合規範：外部 CSS 連結（已寫好備用結構，並下方實作內嵌樣式確保開箱即用） -->
-  <link rel="stylesheet" href="style.css">
-
   <style>
     /* ==========================================
        韓系柔和甜美風格 (Pastel Korean Style)
@@ -23,9 +20,9 @@
       --primary-color: #FFB7B2;   /* 柔粉色 */
       --primary-hover: #FF9AA2;   /* 深粉紅按鈕 Hover */
       --accent-color: #E2F0CB;    /* 奶綠色點綴 */
-      --btn-map: #B5EAD7;         /* 地圖按鈕嫩綠色 */
+      --btn-map: #B5EAD7;          /* 地圖按鈕嫩綠色 */
       --btn-map-hover: #9BE3CA;
-      --text-main: #5D5452;       /* 深可可色文字 (比純黑更柔和) */
+      --text-main: #5D5452;       /* 深可可色文字 */
       --text-sub: #8C827A;
     }
 
@@ -159,10 +156,16 @@
       background-color: var(--btn-map-hover);
       transform: translateY(-2px);
     }
-  </style>
 
-  <!-- 符合規範：外部 JS 載入聲明 (與 defer 屬性) -->
-  <script src="script.js" defer></script>
+    /* 回首頁按鈕 */
+    .btn-home {
+      background-color: #E2E8F0;
+      color: #4A5568;
+      margin-top: 12px;
+      font-size: 0.95rem;
+      padding: 10px 15px;
+    }
+  </style>
 </head>
 <body>
 
@@ -172,21 +175,19 @@
 
     <!-- 美食圖片卡片 -->
     <div id="foodCard" class="food-card">
-      <img id="foodImage" src="" alt="美食圖片">
+      <img id="foodImage" src alt="美食圖片">
     </div>
 
     <!-- 操作按鈕區 -->
     <button id="drawBtn" class="btn btn-draw">✨ 點我抽籤</button>
     <a id="mapBtn" class="btn btn-map" href="#" target="_blank">🚀 馬上出發 (Google Map)</a>
+    <a href="../index.html" class="btn btn-home">🏠 返回作品集選單</a>
   </div>
 
   <script>
-    /* ==========================================
-       符合規範：完全包裝在 DOMContentLoaded 內
-       ========================================== */
     document.addEventListener('DOMContentLoaded', () => {
 
-      // 1. 設定隨機選項資料庫（名稱、網路圖片、Google 地圖關鍵字）
+      // 1. 設定隨機選項資料庫
       const foodOptions = [
         {
           name: "🍲 賀家極鍋物",
@@ -224,29 +225,23 @@
 
       // 3. 按鈕點擊抽籤邏輯
       drawBtn.addEventListener('click', () => {
-        // 從選單中隨機抽取一個項目
         const randomIndex = Math.floor(Math.random() * foodOptions.length);
         const selectedFood = foodOptions[randomIndex];
 
-        // 移除舊的動畫效果，強制重置動畫
         mainTitle.classList.remove('bounce-pop');
-        void mainTitle.offsetWidth; // 觸發瀏覽器重繪 (Reflow)
+        void mainTitle.offsetWidth; // 觸發 Reflow
 
-        // 更新標題內容並加回彈跳動畫
         mainTitle.textContent = selectedFood.name;
         mainTitle.classList.add('bounce-pop');
 
-        // 更新圖片來源與顯示卡片
         foodImage.src = selectedFood.image;
         foodImage.alt = selectedFood.name;
         foodCard.style.display = 'block';
 
-        // 設定 Google Map 連結並顯示馬上出發按鈕
         const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedFood.query)}`;
         mapBtn.href = mapUrl;
         mapBtn.style.display = 'inline-flex';
 
-        // 更改抽籤按鈕文字
         drawBtn.textContent = "🔄 再抽一次";
       });
 
