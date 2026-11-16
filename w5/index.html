@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>雲端心電感應 - 瑪利歐默契大考驗</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Retro Arcade Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+TC:wght@700;900&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background-color: #5c94fc; /* Mario Sky Blue */
+    }
+    
+    .pixel-font {
+      font-family: 'Press Start 2P', monospace;
+    }
+
+    /* 3D Flip Card Effect */
+    .perspective-1000 {
+      perspective: 1000px;
+    }
+    
+    .transform-style-3d {
+      transform-style: preserve-3d;
+      transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .flipped {
+      transform: rotateY(180deg);
+    }
+    
+    .backface-hidden {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    
+    .rotate-y-180 {
+      transform: rotateY(180deg);
+    }
+
+    /* Super Mario Pixel Styling */
+    .mario-border {
+      border: 4px solid #000000;
+      box-shadow: 4px 4px 0px #000000;
+    }
+
+    .mario-btn-red {
+      background-color: #e52521;
+      color: white;
+      border: 4px solid #000;
+      box-shadow: 4px 4px 0px #000;
+    }
+    .mario-btn-red:hover {
+      background-color: #cc1e1b;
+    }
+    .mario-btn-red:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0px #000;
+    }
+
+    .mario-btn-yellow {
+      background-color: #fbd000;
+      color: #000;
+      border: 4px solid #000;
+      box-shadow: 4px 4px 0px #000;
+    }
+    .mario-btn-yellow:hover {
+      background-color: #e5bd00;
+    }
+    .mario-btn-yellow:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0px #000;
+    }
+
+    .mario-btn-green {
+      background-color: #43b047;
+      color: white;
+      border: 4px solid #000;
+      box-shadow: 4px 4px 0px #000;
+    }
+    .mario-btn-green:hover {
+      background-color: #38963c;
+    }
+    .mario-btn-green:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0px #000;
+    }
+
+    .mario-card {
+      background: #e52521;
+      border: 4px solid #000;
+      box-shadow: 6px 6px 0px rgba(0,0,0,0.4);
+    }
+
+    .mario-card-back {
+      background: #fbd000;
+      border: 4px solid #000;
+      box-shadow: 6px 6px 0px rgba(0,0,0,0.4);
+    }
+
+    /* Floating Animations */
+    @keyframes bounce-slow {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    .animate-bounce-slow {
+      animation: bounce-slow 2s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-900 pb-20 relative">
+
+  <!-- Header Header Header -->
+  <header class="bg-[#e52521] border-b-8 border-black p-4 text-white text-center shadow-lg relative">
+    <div class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2">
+      <div class="flex items-center gap-3">
+        <span class="text-4xl animate-bounce-slow">🍄</span>
+        <h1 class="text-2xl md:text-3xl font-extrabold tracking-wider drop-shadow-[2px_2px_0_#000]">雲端心電感應</h1>
+      </div>
+      <div id="room-badge" class="hidden bg-[#fbd000] text-black font-black px-4 py-1 rounded-full border-4 border-black text-sm md:text-base">
+        房號: <span id="current-room-id" class="pixel-font">----</span> | 玩家: <span id="current-player-name">--</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Login & Room Selection View -->
+  <div id="view-login" class="max-w-md mx-auto mt-12 p-4">
+    <div class="bg-white mario-border rounded-xl p-6 relative">
+      <div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-[#fbd000] px-6 py-1 mario-border rounded-full font-extrabold text-lg">
+        SELECT MODE
+      </div>
+
+      <div class="mt-4 space-y-4">
+        <!-- Select Mode Buttons -->
+        <div class="grid grid-[#10b981] grid-cols-2 gap-3">
+          <button onclick="switchLoginMode('host')" id="btn-mode-host" class="mario-btn-yellow font-black py-3 rounded-lg text-center transition">
+            👑 我是房主<br><span class="text-xs font-normal">(建房出題)</span>
+          </button>
+          <button onclick="switchLoginMode('player')" id="btn-mode-player" class="mario-btn-red font-black py-3 rounded-lg text-center transition">
+            🎮 我是玩家<br><span class="text-xs font-normal">(輸入房號)</span>
+          </button>
+        </div>
+
+        <hr class="border-2 border-black border-dashed my-4">
+
+        <!-- Form: Host Room Creation -->
+        <form id="form-host" onsubmit="handleHostCreate(event)" class="space-y-4">
+          <div>
+            <label class="block font-black text-sm mb-1">房主名字 / 暱稱：</label>
+            <input type="text" id="host-name" required placeholder="例如: 馬力歐" class="w-full p-2 border-4 border-black rounded-lg focus:outline-none focus:bg-yellow-50 font-bold">
+          </div>
+          <div>
+            <label class="block font-black text-sm mb-1">自訂或產生房號：</label>
+            <div class="flex gap-2">
+              <input type="text" id="host-room-id" required placeholder="例如: 8888" class="w-full p-2 border-4 border-black rounded-lg uppercase pixel-font focus:outline-none">
+              <button type="button" onclick="generateRandomRoom()" class="mario-btn-yellow text-xs font-black px-3 rounded-lg whitespace-nowrap">隨機</button>
+            </div>
+          </div>
+          <div>
+            <label class="block font-black text-sm mb-1">第一題心電感應題目：</label>
+            <textarea id="host-question" required rows="2" placeholder="例如: 提到紅色聯想到什麼？" class="w-full p-2 border-4 border-black rounded-lg focus:outline-none focus:bg-yellow-50 font-bold"></textarea>
+          </div>
+          <button type="submit" class="w-full mario-btn-green font-black py-3 rounded-lg text-lg tracking-wider">
+            🚀 建立房間並開啟考驗！
+          </button>
+        </form>
+
+        <!-- Form: Player Join Room -->
+        <form id="form-player" onsubmit="handlePlayerJoin(event)" class="space-y-4 hidden">
+          <div>
+            <label class="block font-black text-sm mb-1">玩家名字 / 暱稱：</label>
+            <input type="text" id="player-name" required placeholder="例如: 路易吉" class="w-full p-2 border-4 border-black rounded-lg focus:outline-none focus:bg-yellow-50 font-bold">
+          </div>
+          <div>
+            <label class="block font-black text-sm mb-1">輸入房號：</label>
+            <input type="text" id="player-room-id" required placeholder="例如: 8888" class="w-full p-2 border-4 border-black rounded-lg uppercase pixel-font focus:outline-none">
+          </div>
+          <button type="submit" class="w-full mario-btn-red font-black py-3 rounded-lg text-lg tracking-wider">
+            ⭐ 加入遊戲！
+          </button>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Arena View -->
+  <div id="view-game" class="max-w-5xl mx-auto mt-6 p-4 hidden">
+    <!-- Question Banner -->
+    <div class="bg-[#fbd000] mario-border rounded-2xl p-6 text-center mb-8 relative">
+      <span class="absolute -top-4 left-6 bg-red-600 text-white border-2 border-black font-black px-3 py-1 rounded-md text-xs pixel-font">QUESTION</span>
+      <h2 id="display-question" class="text-2xl md:text-3xl font-black text-slate-900 tracking-wide mt-1">
+        等待房主出題中...
+      </h2>
+      <div id="match-stats" class="mt-3 hidden">
+        <span id="match-percentage" class="inline-block bg-black text-yellow-300 font-black px-4 py-1 rounded-full text-base border-2 border-white shadow">
+          默契契合度: 0%
+        </span>
+      </div>
+    </div>
+
+    <!-- Player Answer Input (Shown when status is 'playing') -->
+    <div id="answer-box" class="max-w-md mx-auto bg-white mario-border rounded-xl p-4 mb-8 hidden">
+      <label class="block font-black text-center text-sm mb-2">請填寫你的心電感應答案：</label>
+      <div class="flex gap-2">
+        <input type="text" id="my-answer-input" placeholder="輸入答案..." class="w-full p-2 border-4 border-black rounded-lg font-bold focus:outline-none">
+        <button onclick="submitAnswer()" class="mario-btn-green font-black px-6 py-2 rounded-lg whitespace-nowrap">
+          送出
+        </button>
+      </div>
+      <p id="submitted-notice" class="text-xs text-center text-green-600 font-bold mt-2 hidden">✓ 答案已成功送出！等待房主開牌中...</p>
+    </div>
+
+    <!-- 3D Card Grid Container -->
+    <div id="cards-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <!-- Dynamically Generated Cards Here -->
+    </div>
+  </div>
+
+  <!-- Hidden Host Control Button (Bottom Right Question Box) -->
+  <button id="btn-host-toggle" onclick="toggleHostPanel()" class="fixed bottom-6 right-6 w-16 h-16 bg-[#fbd000] mario-border rounded-2xl flex items-center justify-center text-3xl font-black shadow-2xl animate-bounce-slow z-40 hover:scale-110 transition">
+    ❓
+  </button>
+
+  <!-- Host Control Panel Modal -->
+  <div id="host-panel" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white mario-border rounded-2xl max-w-lg w-full p-6 relative">
+      <button onclick="toggleHostPanel()" class="absolute top-4 right-4 font-black text-xl bg-gray-200 border-2 border-black rounded-full w-8 h-8 flex items-center justify-center">✕</button>
+      <h3 class="text-xl font-black mb-4 flex items-center gap-2">👑 房主控制台</h3>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block font-black text-sm mb-1">更換新題目：</label>
+          <div class="flex gap-2">
+            <input type="text" id="new-question-input" placeholder="輸入新題目..." class="w-full p-2 border-4 border-black rounded-lg font-bold">
+            <button onclick="hostSetNewQuestion()" class="mario-btn-yellow font-black px-4 py-2 rounded-lg whitespace-nowrap text-sm">更新題目</button>
+          </div>
+        </div>
+
+        <div class="pt-2 border-t-2 border-gray-200 grid grid-cols-2 gap-3">
+          <button onclick="hostReveal()" class="mario-btn-green font-black py-3 rounded-lg text-base">
+            🃏 揭曉答案 (開牌)
+          </button>
+          <button onclick="hostReset()" class="mario-btn-red font-black py-3 rounded-lg text-base">
+            🔄 重置本局房間
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio Effects (Web Audio API Synthesizer) -->
+  <script>
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyTrQwJgQu5REHjDtPhMaXz5H1bHy6O5jTkwjFX6ixxqCGohxph8Rf3w1L4j-Of8AqL-Q/exec";
+
+    // Application State
+    let state = {
+      room: "",
+      playerName: "",
+      isHost: false,
+      gameStatus: "setup", // 'setup', 'playing', 'revealed'
+      question: "",
+      answers: {},
+      pollingTimer: null
+    };
+
+    // Web Audio Sound Effects Generator
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(type) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      const now = audioCtx.currentTime;
+      if (type === 'click') {
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(400, now);
+        osc.frequency.exponentialRampToValueAtTime(800, now + 0.08);
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.linearRampToValueAtTime(0, now + 0.08);
+        osc.start(now);
+        osc.stop(now + 0.08);
+      } else if (type === 'reveal') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(300, now);
+        osc.frequency.exponentialRampToValueAtTime(900, now + 0.3);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.linearRampToValueAtTime(0, now + 0.3);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      } else if (type === 'fanfare') {
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+          const subOsc = audioCtx.createOscillator();
+          const subGain = audioCtx.createGain();
+          subOsc.connect(subGain);
+          subGain.connect(audioCtx.destination);
+          subOsc.type = 'sine';
+          subOsc.frequency.setValueAtTime(freq, now + idx * 0.1);
+          subGain.gain.setValueAtTime(0.15, now + idx * 0.1);
+          subGain.gain.linearRampToValueAtTime(0, now + idx * 0.1 + 0.2);
+          subOsc.start(now + idx * 0.1);
+          subOsc.stop(now + idx * 0.1 + 0.2);
+        });
+      }
+    }
+
+    // Generate Random Room ID
+    function generateRandomRoom() {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let code = "";
+      for (let i = 0; i < 4; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      document.getElementById('host-room-id').value = code;
+      playSound('click');
+    }
+
+    // Switch Login View Tabs
+    function switchLoginMode(mode) {
+      playSound('click');
+      const formHost = document.getElementById('form-host');
+      const formPlayer = document.getElementById('form-player');
+      const btnHost = document.getElementById('btn-mode-host');
+      const btnPlayer = document.getElementById('btn-mode-player');
+
+      if (mode === 'host') {
+        formHost.classList.remove('hidden');
+        formPlayer.classList.add('hidden');
+        btnHost.className = "mario-btn-yellow font-black py-3 rounded-lg text-center transition";
+        btnPlayer.className = "bg-gray-200 text-gray-700 font-black py-3 rounded-lg text-center transition";
+      } else {
+        formHost.classList.add('hidden');
+        formPlayer.classList.remove('hidden');
+        btnPlayer.className = "mario-btn-red font-black py-3 rounded-lg text-center transition";
+        btnHost.className = "bg-gray-200 text-gray-700 font-black py-3 rounded-lg text-center transition";
+      }
+    }
+
+    // Host Creation & Question Submission
+    async function handleHostCreate(e) {
+      e.preventDefault();
+      playSound('click');
+      const name = document.getElementById('host-name').value.trim();
+      const room = document.getElementById('host-room-id').value.trim().toUpperCase();
+      const question = document.getElementById('host-question').value.trim();
+
+      if (!name || !room || !question) return;
+
+      state.playerName = name;
+      state.room = room;
+      state.isHost = true;
+
+      // Send 'set_question' action to GAS Backend
+      try {
+        await fetch(GAS_API_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "set_question",
+            room: room,
+            question: question
+          })
+        });
+        enterGame();
+      } catch (err) {
+        alert("網路連線錯誤，請重試！");
+      }
+    }
+
+    // Player Join Room
+    function handlePlayerJoin(e) {
+      e.preventDefault();
+      playSound('click');
+      const name = document.getElementById('player-name').value.trim();
+      const room = document.getElementById('player-room-id').value.trim().toUpperCase();
+
+      if (!name || !room) return;
+
+      state.playerName = name;
+      state.room = room;
+      state.isHost = false;
+
+      enterGame();
+    }
+
+    // Enter Game Screen & Start Polling
+    function enterGame() {
+      document.getElementById('view-login').classList.add('hidden');
+      document.getElementById('view-game').classList.remove('hidden');
+      document.getElementById('room-badge').classList.remove('hidden');
+      document.getElementById('current-room-id').textContent = state.room;
+      document.getElementById('current-player-name').textContent = state.playerName;
+
+      // Start Polling Loop (Every 2 seconds)
+      fetchGameState();
+      state.pollingTimer = setInterval(fetchGameState, 2000);
+    }
+
+    // Fetch Room State from GAS API (GET)[cite: 1]
+    async function fetchGameState() {
+      if (!state.room) return;
+      try {
+        const res = await fetch(`${GAS_API_URL}?room=${encodeURIComponent(state.room)}`);
+        const data = await res.json();
+
+        // Check if revealed status just triggered
+        if (state.gameStatus !== 'revealed' && data.status === 'revealed') {
+          playSound('reveal');
+          setTimeout(() => playSound('fanfare'), 400);
+        }
+
+        state.gameStatus = data.status || 'setup';
+        state.question = data.question || '';
+        state.answers = data.answers || {};
+
+        renderUI();
+      } catch (err) {
+        console.error("Polling fetch error:", err);
+      }
+    }
+
+    // Render Dynamic UI Elements
+    function renderUI() {
+      // Question Display
+      document.getElementById('display-question').textContent = state.question || "等待房主出題中...";
+
+      // Answer Input Box Display
+      const answerBox = document.getElementById('answer-box');
+      if (state.gameStatus === 'playing') {
+        answerBox.classList.remove('hidden');
+        if (state.answers[state.playerName]) {
+          document.getElementById('submitted-notice').classList.remove('hidden');
+        } else {
+          document.getElementById('submitted-notice').classList.add('hidden');
+        }
+      } else {
+        answerBox.classList.add('hidden');
+      }
+
+      // Match Percentage & Highlight Calculation
+      const matchStats = document.getElementById('match-stats');
+      const playerNames = Object.keys(state.answers);
+      
+      if (state.gameStatus === 'revealed' && playerNames.length > 0) {
+        matchStats.classList.remove('hidden');
+        
+        // Find most common answer count
+        const counts = {};
+        let maxCount = 0;
+        Object.values(state.answers).forEach(ans => {
+          const cleanAns = ans.trim().toLowerCase();
+          counts[cleanAns] = (counts[cleanAns] || 0) + 1;
+          if (counts[cleanAns] > maxCount) maxCount = counts[cleanAns];
+        });
+
+        const percentage = Math.round((maxCount / playerNames.length) * 100);
+        document.getElementById('match-percentage').textContent = `全場最高默契契合度: ${percentage}%`;
+      } else {
+        matchStats.classList.add('hidden');
+      }
+
+      // Render 3D Cards Grid
+      const container = document.getElementById('cards-container');
+      container.innerHTML = '';
+
+      playerNames.forEach(player => {
+        const answerText = state.answers[player];
+        const isFlipped = (state.gameStatus === 'revealed');
+
+        const cardElement = document.createElement('div');
+        cardElement.className = "perspective-1000 h-44 w-full";
+        cardElement.innerHTML = `
+          <div class="transform-style-3d relative w-full h-full ${isFlipped ? 'flipped' : ''}">
+            <!-- Front Card (Unrevealed Question Block) -->
+            <div class="backface-hidden absolute inset-0 mario-card rounded-2xl flex flex-col items-center justify-center p-4 text-white">
+              <span class="text-4xl animate-bounce-slow mb-2">❓</span>
+              <span class="font-extrabold text-lg tracking-wide border-2 border-black bg-black/30 px-3 py-1 rounded-full">${escapeHtml(player)}</span>
+              <span class="text-xs font-bold mt-2 text-yellow-300">已填答 📝</span>
+            </div>
+            <!-- Back Card (Revealed Answer Card) -->
+            <div class="backface-hidden rotate-y-180 absolute inset-0 mario-card-back rounded-2xl flex flex-col items-center justify-center p-4 text-slate-900">
+              <span class="text-xs font-black bg-black text-white px-3 py-1 rounded-full mb-2">${escapeHtml(player)} 的答案</span>
+              <span class="text-xl font-black text-center break-all">${escapeHtml(answerText)}</span>
+            </div>
+          </div>
+        `;
+        container.appendChild(cardElement);
+      });
+    }
+
+    // Submit Answer Action[cite: 1]
+    async function submitAnswer() {
+      const input = document.getElementById('my-answer-input');
+      const answer = input.value.trim();
+      if (!answer) return;
+
+      playSound('click');
+      try {
+        await fetch(GAS_API_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "submit_answer",
+            room: state.room,
+            playerName: state.playerName,
+            answer: answer
+          })
+        });
+        input.value = '';
+        fetchGameState();
+      } catch (err) {
+        alert("答案送出失敗，請重試！");
+      }
+    }
+
+    // Host Panel Toggle
+    function toggleHostPanel() {
+      playSound('click');
+      const panel = document.getElementById('host-panel');
+      panel.classList.toggle('hidden');
+    }
+
+    // Host Actions: New Question, Reveal, Reset[cite: 1]
+    async function hostSetNewQuestion() {
+      const qInput = document.getElementById('new-question-input');
+      const q = qInput.value.trim();
+      if (!q) return;
+
+      playSound('click');
+      await fetch(GAS_API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "set_question",
+          room: state.room,
+          question: q
+        })
+      });
+      qInput.value = '';
+      toggleHostPanel();
+      fetchGameState();
+    }
+
+    async function hostReveal() {
+      playSound('click');
+      await fetch(GAS_API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "reveal",
+          room: state.room
+        })
+      });
+      toggleHostPanel();
+      fetchGameState();
+    }
+
+    async function hostReset() {
+      if (!confirm("確定要重置本局房間與答案嗎？")) return;
+      playSound('click');
+      await fetch(GAS_API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "reset",
+          room: state.room
+        })
+      });
+      toggleHostPanel();
+      fetchGameState();
+    }
+
+    // Helper: Escape HTML
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, m => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+      })[m]);
+    }
+  </script>
+</body>
+</html>
